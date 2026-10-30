@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FixMyStreet: Ahmedabad Complaint Portal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f6f5f0;--surface:#fff;--ink:#1d2733;--muted:#5d6874;--line:#d9d8d0;--sign:#f2b705;--signink:#1d2733;--ok:#1f7a4d;--warn:#b86e00;--bad:#b3261e;--info:#1f5fa8;--chip:#ecebe4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a21;--surface:#1d2631;--ink:#eef0f2;--muted:#9aa5b1;--line:#34404d;--sign:#f2b705;--signink:#141a21;--ok:#5fcf97;--warn:#f0b04a;--bad:#ff8a80;--info:#7db4f0;--chip:#2a3542;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141a21;--surface:#1d2631;--ink:#eef0f2;--muted:#9aa5b1;--line:#34404d;--sign:#f2b705;--signink:#141a21;--ok:#5fcf97;--warn:#f0b04a;--bad:#ff8a80;--info:#7db4f0;--chip:#2a3542;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Public Sans",system-ui,sans-serif}
+header{background:var(--sign);color:var(--signink);padding:18px 20px 0}
+.wrap{max-width:920px;margin:0 auto}
+h1{font:700 clamp(30px,6vw,46px)/1 "Barlow Condensed",Impact,sans-serif;margin:0 0 4px;letter-spacing:.01em}
+header p{margin:0 0 14px;max-width:56ch}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav button{font:600 15px "Public Sans",sans-serif;border:0;background:rgba(0,0,0,.12);color:var(--signink);padding:10px 18px;border-radius:8px 8px 0 0;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--info);outline-offset:2px}
+main{padding:24px 20px 60px}
+section[hidden]{display:none}
+h2{font:700 28px/1.1 "Barlow Condensed",sans-serif;margin:0 0 14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px}
+textarea{min-height:96px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+.err{color:var(--bad);font-size:13px;min-height:18px;margin-top:3px}
+.btn{font:600 16px "Public Sans",sans-serif;background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:12px 22px;cursor:pointer;margin-top:18px}
+.btn.alt{background:var(--chip);color:var(--ink)}
+.badge{display:inline-block;font-size:13px;font-weight:600;padding:2px 10px;border-radius:99px;background:var(--chip)}
+.s-Submitted{color:var(--info)}.s-InProgress{color:var(--warn)}.s-Resolved{color:var(--ok)}
+.p-High{color:var(--bad)}
+.item{border-top:1px solid var(--line);padding:14px 0}
+.item:first-child{border-top:0}
+.item h3{margin:0 0 2px;font-size:17px}
+.meta{color:var(--muted);font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px}
+.stat b{font:700 30px/1 "Barlow Condensed",sans-serif;display:block}
+.steps{display:flex;gap:6px;margin:10px 0}
+.steps span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.steps span.on{background:var(--ok)}
+.toast{background:var(--ok);color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:14px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.toolbar select{width:auto}
+.empty{color:var(--muted);padding:18px 0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>FixMyStreet</h1>
+<p>Report potholes, garbage, water leaks and broken streetlights in Ahmedabad. Track each complaint until it is fixed.</p>
+<nav role="tablist">
+<button role="tab" id="t-report" aria-selected="true" onclick="go('report')">Report a problem</button>
+<button role="tab" id="t-track" aria-selected="false" onclick="go('track')">Track complaint</button>
+<button role="tab" id="t-admin" aria-selected="false" onclick="go('admin')">Officer dashboard</button>
+</nav></div></header>
+
+<main><div class="wrap">
+
+<section id="report">
+<h2>Report a problem</h2>
+<div id="done"></div>
+<div class="panel">
+<form onsubmit="return false" novalidate>
+<div class="row">
+<div><label for="name">Your name</label><input id="name" autocomplete="name"><div class="err" id="e-name"></div></div>
+<div><label for="phone">Mobile number</label><input id="phone" inputmode="numeric" maxlength="10" placeholder="10 digits" autocomplete="tel"><div class="err" id="e-phone"></div></div>
+</div>
+<div class="row">
+<div><label for="cat">Problem type</label>
+<select id="cat"><option value="">Select a type</option><option>Pothole or road damage</option><option>Garbage not collected</option><option>Water leakage</option><option>Streetlight not working</option><option>Drainage blockage</option><option>Other</option></select><div class="err" id="e-cat"></div></div>
+<div><label for="ward">Area or ward</label>
+<select id="ward"><option value="">Select an area</option><option>Navrangpura</option><option>Maninagar</option><option>Satellite</option><option>Naroda</option><option>Vastrapur</option><option>Chandkheda</option></select><div class="err" id="e-ward"></div></div>
+</div>
+<label for="loc">Street or landmark</label><input id="loc" placeholder="e.g. Near Law Garden gate 2"><div class="err" id="e-loc"></div>
+<label for="desc">What is wrong?</label><textarea id="desc" maxlength="300"></textarea>
+<div class="meta"><span id="count">0</span>/300 characters</div><div class="err" id="e-desc"></div>
+<label for="pri">Urgency</label>
+<select id="pri"><option>Low</option><option selected>Medium</option><option>High</option></select>
+<button class="btn" onclick="submitC()">Submit complaint</button>
+</form></div>
+</section>
+
+<section id="track" hidden>
+<h2>Track complaint</h2>
+<div class="panel">
+<label for="tid">Complaint ID</label>
+<input id="tid" placeholder="e.g. FMS-1001" style="max-width:280px">
+<button class="btn" onclick="trackC()">Check status</button>
+<div id="tres" style="margin-top:16px"></div>
+</div>
+</section>
+
+<section id="admin" hidden>
+<h2>Officer dashboard</h2>
+<div class="stats" id="stats"></div>
+<div class="toolbar">
+<select id="fs" onchange="renderA()" aria-label="Filter by status"><option value="">All statuses</option><option>Submitted</option><option>In Progress</option><option>Resolved</option></select>
+<select id="fc" onchange="renderA()" aria-label="Filter by type"><option value="">All types</option></select>
+<button class="btn alt" style="margin:0" onclick="resetD()">Reset demo data</button>
+</div>
+<div class="panel" id="alist"></div>
+</section>
+
+</div></main>
+
+<script>
+var KEY="fms_complaints_v1", list=[], next=1005;
+var seed=[
+{id:"FMS-1001",name:"Meera Shah",phone:"9876500001",cat:"Pothole or road damage",ward:"Navrangpura",loc:"CG Road near the bus stop",desc:"Deep pothole causing two-wheeler accidents.",pri:"High",status:"In Progress",date:"2026-10-24"},
+{id:"FMS-1002",name:"Ravi Patel",phone:"9876500002",cat:"Garbage not collected",ward:"Maninagar",loc:"Opposite Kankaria main gate",desc:"Garbage van has not come for four days.",pri:"Medium",status:"Submitted",date:"2026-10-27"},
+{id:"FMS-1003",name:"Anita Joshi",phone:"9876500003",cat:"Streetlight not working",ward:"Vastrapur",loc:"Vastrapur Lake road",desc:"Three lights are off after sunset.",pri:"Medium",status:"Resolved",date:"2026-10-20"},
+{id:"FMS-1004",name:"Imran Khan",phone:"9876500004",cat:"Water leakage",ward:"Naroda",loc:"Sector 2 main pipeline",desc:"Pipe leaking since morning, water is being wasted.",pri:"High",status:"Submitted",date:"2026-10-29"}];
+var STATUS=["Submitted","In Progress","Resolved"];
+
+function load(){try{var s=localStorage.getItem(KEY);if(s){var d=JSON.parse(s);if(d&&d.list&&d.list.length){list=d.list;next=d.next||next;return}}}catch(e){}list=seed.slice();next=1005}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({list:list,next:next}))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function go(v){["report","track","admin"].forEach(function(x){$(x).hidden=x!==v;$("t-"+x).setAttribute("aria-selected",x===v)});if(v==="admin")renderA();try{history.replaceState(null,"","#"+v)}catch(e){}}
+
+$("desc").addEventListener("input",function(){$("count").textContent=this.value.length});
+
+function submitC(){
+ var f={name:$("name").value.trim(),phone:$("phone").value.trim(),cat:$("cat").value,ward:$("ward").value,loc:$("loc").value.trim(),desc:$("desc").value.trim(),pri:$("pri").value};
+ var e={};
+ if(f.name.length<2)e.name="Enter your name.";
+ if(!/^[6-9]\d{9}$/.test(f.phone))e.phone="Enter a valid 10-digit mobile number starting with 6 to 9.";
+ if(!f.cat)e.cat="Select a problem type.";
+ if(!f.ward)e.ward="Select your area.";
+ if(f.loc.length<4)e.loc="Add a street or landmark.";
+ if(f.desc.length<15)e.desc="Describe the problem in at least 15 characters.";
+ ["name","phone","cat","ward","loc","desc"].forEach(function(k){$("e-"+k).textContent=e[k]||""});
+ if(Object.keys(e).length)return;
+ var c=Object.assign({id:"FMS-"+(next++),status:"Submitted",date:new Date().toISOString().slice(0,10)},f);
+ list.unshift(c);save();
+ $("done").innerHTML='<div class="toast" role="status">Complaint submitted. Your ID is <b>'+c.id+'</b>. Save it to track progress.</div>';
+ ["name","phone","loc","desc"].forEach(function(k){$(k).value=""});$("cat").value="";$("ward").value="";$("count").textContent=0;
+ window.scrollTo(0,0);
+}
+
+function trackC(){
+ var id=$("tid").value.trim().toUpperCase(),r=$("tres");
+ if(!id){r.innerHTML='<div class="err">Enter a complaint ID.</div>';return}
+ var c=list.find(function(x){return x.id===id});
+ if(!c){r.innerHTML='<div class="err">No complaint found for '+esc(id)+'. Check the ID from your confirmation message.</div>';return}
+ var i=STATUS.indexOf(c.status);
+ r.innerHTML='<h3 style="margin:0">'+esc(c.cat)+'</h3><div class="meta">'+esc(c.loc)+', '+esc(c.ward)+' · filed '+c.date+'</div>'+
+ '<div class="steps" aria-hidden="true">'+STATUS.map(function(s,k){return '<span class="'+(k<=i?"on":"")+'"></span>'}).join("")+'</div>'+
+ '<p>Status: <b class="s-'+c.status.replace(" ","")+'">'+c.status+'</b></p><p>'+esc(c.desc)+'</p>';
+}
+
+function renderA(){
+ var cats=[...new Set(list.map(function(x){return x.cat}))],fc=$("fc"),cur=fc.value;
+ fc.innerHTML='<option value="">All types</option>'+cats.map(function(c){return '<option'+(c===cur?" selected":"")+'>'+esc(c)+'</option>'}).join("");
+ var n=function(s){return list.filter(function(x){return x.status===s}).length};
+ $("stats").innerHTML=[["Total",list.length],["Submitted",n("Submitted")],["In progress",n("In Progress")],["Resolved",n("Resolved")]].map(function(s){return '<div class="stat"><b>'+s[1]+'</b>'+s[0]+'</div>'}).join("");
+ var fs=$("fs").value,fcv=fc.value;
+ var rows=list.filter(function(x){return(!fs||x.status===fs)&&(!fcv||x.cat===fcv)});
+ $("alist").innerHTML=rows.length?rows.map(function(c){
+  return '<div class="item"><h3>'+esc(c.cat)+' <span class="badge s-'+c.status.replace(" ","")+'">'+c.status+'</span> <span class="badge '+(c.pri==="High"?"p-High":"")+'">'+c.pri+'</span></h3>'+
+  '<div class="meta">'+c.id+' · '+esc(c.loc)+', '+esc(c.ward)+' · '+esc(c.name)+' · '+c.date+'</div><div>'+esc(c.desc)+'</div>'+
+  '<label for="u-'+c.id+'" class="meta" style="margin:8px 0 2px">Update status</label><select id="u-'+c.id+'" style="width:auto" onchange="upd(\''+c.id+'\',this.value)">'+STATUS.map(function(s){return '<option'+(s===c.status?" selected":"")+'>'+s+'</option>'}).join("")+'</select></div>'}).join(""):'<div class="empty">No complaints match these filters. Clear a filter to see more.</div>';
+}
+function upd(id,s){var c=list.find(function(x){return x.id===id});if(c){c.status=s;save();renderA()}}
+function resetD(){list=seed.slice();next=1005;save();renderA()}
+
+load();
+var h=(location.hash||"").slice(1);go(["report","track","admin"].indexOf(h)>-1?h:"report");
+</script>
+</body>
+</html>
